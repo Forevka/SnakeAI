@@ -33,7 +33,7 @@ else:
     snake.update()
     timer = 0
 ```
-Otherwise if you want control snake manual simple change father of Snake object to `RealPlayer`
+Otherwise if you want control snake manual from keyboard you need simply change father of Snake object to `RealPlayer`
 ```
 ...
 class Snake(RealPlayer):
