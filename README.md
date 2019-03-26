@@ -1,7 +1,7 @@
 # SnakeAI
 Snake with BFS and DFS simpel pathfinding
 
-#Code
+##Code
 If you wanna to make yourself pathfind algorithm for snake simple overload `FakePlayer.update()` method
 ```
 ...
@@ -40,5 +40,5 @@ class Snake(RealPlayer):
 ...
 ```
 
-#To Do
+##To Do
 - [ ] More pathfinding
