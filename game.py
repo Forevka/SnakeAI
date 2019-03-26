@@ -1,19 +1,22 @@
 import pygame
+from pygame import gfxdraw
 import random
 import numpy as np
 import copy
 from math import floor
 from Graph.Graph import Graph
+from functools import lru_cache
 
 # Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
+GREEN = (11, 102, 35)
 RED = (255, 0, 0)
 
+
 block_size = 32
-sc_width = 8
-sc_height = 8
+sc_width = 4
+sc_height = 4
 
 
 pygame.init()
@@ -35,6 +38,7 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
+@lru_cache(maxsize=None)
 def dfs_paths(graph, start, end) -> list:
     '''
         finding all possible paths from start_node to end_node
@@ -55,6 +59,7 @@ def dfs_paths(graph, start, end) -> list:
 
     return stack
 
+@lru_cache(maxsize=None)
 def bfs_paths(graph, start, end) -> list:
     '''
         finding all possible path with bfs algo
@@ -64,8 +69,11 @@ def bfs_paths(graph, start, end) -> list:
         FIFO structure
     '''
     queue = [(start, [start])]
+    print('graph',graph)
     while queue:
         (vertex, path) = queue.pop(0)
+        print(start, end)
+        print('vertex', vertex)
         for next in graph[vertex] - set(path):
             if next == end:
                 yield path + [next]
@@ -138,8 +146,8 @@ class FakePlayer(object):
             for link in links:
                 if link in delete_coords:
                     new_graph[node].remove(link)
-            if node in delete_coords:
-                del new_graph[node]
+            #if node in delete_coords:
+            #    del new_graph[node]
 
         if dfs:
             path = next(dfs_paths(new_graph, where_to_start, where_to_end))
@@ -174,6 +182,7 @@ class FakePlayer(object):
                 return i[0]
 
     def update(self):
+        self.current_path = self.create_path(bfs = True)
         n = self.get_neighbours()
         move_to = self.current_path.pop(0)#self.current_path[0]
         direction = self.get_move_direction(n, move_to)
@@ -209,6 +218,11 @@ class Snake(FakePlayer):
         super(Snake, self).__init__()
 
     def draw(self):
+        if self.current_path:
+            for i in self.current_path:
+                x, y = to_real_coords(i, sc_width)
+                pygame.draw.circle(screen, GREEN,(int(x*block_size+block_size/2), int(y*block_size+block_size/2)),10)
+                #gfxdraw.pixel(screen, int(x*block_size+block_size/2), int(y*block_size+block_size/2), BLACK)
         pygame.draw.rect(screen, BLACK, (self.x * block_size, self.y * block_size, block_size, block_size))
         if self.tail is not None:
             self.tail.draw()
@@ -233,7 +247,7 @@ class Snake(FakePlayer):
                 self.tail.update()
             if Snake.meal == self:
                 self.length += 1
-                Snake.meal = Meal()
+                Snake.meal = Meal(self)
                 Snake.last_tail.tail = Tail(Snake.last_tail.x, Snake.last_tail.y, Snake.last_tail)
                 Snake.last_tail = Snake.last_tail.tail
 
@@ -246,6 +260,7 @@ class Tail(Snake):
         self.prev_y = y
         self.father = father
         self.tail = None
+        self.current_path = None
         Snake.tail_list.append(self)
 
     def update(self):
@@ -264,11 +279,14 @@ class Tail(Snake):
 
 
 class Meal(object):
-    def __init__(self):
+    def __init__(self, snake):
+        #print(snake)
         delete_coords = set([i.convert_coords() for i in Snake.tail_list])
+        delete_coords.add(snake.convert_coords())
         possible_coords = set([i for i in range(0, sc_width*sc_height, 1)]) - delete_coords
         rnd = random.choice(tuple(possible_coords))
         self.x, self.y = to_real_coords(rnd, sc_width)
+        print('creating_at', self.x, self.y)
 
     def draw(self):
         pygame.draw.rect(screen, RED, (self.x * block_size, self.y * block_size, block_size, block_size))
@@ -294,7 +312,7 @@ def text_to_screen(screen, text, x, y, size = 50,
 
 # -------- Main Program Loop -----------
 snake = Snake()
-Snake.meal = Meal()
+Snake.meal = Meal(snake)
 timer = 0
 while not done:
     # --- Main event loop
@@ -304,7 +322,7 @@ while not done:
 
     # --- Game logic should go here
     snake.process_movement()
-    if timer<3:
+    if timer<5:
         timer+=1
     else:
         snake.update()
