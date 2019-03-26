@@ -4,8 +4,6 @@ import random
 import numpy as np
 import copy
 from math import floor
-from Graph.Graph import Graph
-from functools import lru_cache
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -15,8 +13,8 @@ RED = (255, 0, 0)
 
 
 block_size = 32
-sc_width = 4
-sc_height = 4
+sc_width = 8
+sc_height = 8
 
 
 pygame.init()
@@ -38,7 +36,6 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
-@lru_cache(maxsize=None)
 def dfs_paths(graph, start, end) -> list:
     '''
         finding all possible paths from start_node to end_node
@@ -59,7 +56,6 @@ def dfs_paths(graph, start, end) -> list:
 
     return stack
 
-@lru_cache(maxsize=None)
 def bfs_paths(graph, start, end) -> list:
     '''
         finding all possible path with bfs algo
@@ -69,11 +65,11 @@ def bfs_paths(graph, start, end) -> list:
         FIFO structure
     '''
     queue = [(start, [start])]
-    print('graph',graph)
+    #print('graph',graph)
     while queue:
         (vertex, path) = queue.pop(0)
-        print(start, end)
-        print('vertex', vertex)
+        #print(start, end)
+        #print('vertex', vertex)
         for next in graph[vertex] - set(path):
             if next == end:
                 yield path + [next]
